@@ -1,20 +1,15 @@
-GE Control V2 — application web iPhone
+GE Control — Démo
 
-Installation rapide sur iPhone:
-1. Décompresser le ZIP sur un ordinateur ou héberger le dossier sur un service web.
-2. Ouvrir index.html dans Safari.
-3. Pour une utilisation type application: Safari > Partager > Sur l’écran d’accueil.
+Cette démo simule:
+- territoires St-Barthélemy / St-Martin
+- sites et groupes exemple
+- relevés et contrôles
+- pièces détachées (liste provisoire)
+- quantité utilisée
+- détection d'un remplacement de la même pièce dans les 21 jours
+- alerte dans l'espace administrateur
+- historique
+- signature et impression PDF
 
-Fonctions V2:
-- tableau de bord
-- relevés moteur/électriques
-- seuils configurables
-- checklist OK/NOK/N/A
-- anomalie, criticité et photo
-- signature tactile
-- historique/recherche
-- stockage local hors connexion après chargement
-- export JSON
-- impression / PDF
-
-Important: les seuils fournis sont des valeurs de démonstration et doivent être validés selon les constructeurs.
+La liste des pièces sera remplacée par le fichier Excel fourni plus tard.
+Les données de cette démo sont stockées localement dans le navigateur et ne constituent pas encore une base sécurisée multi-utilisateurs.
