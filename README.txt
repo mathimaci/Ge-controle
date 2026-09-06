@@ -1,15 +1,10 @@
-GE Control — Démo
-
-Cette démo simule:
-- territoires St-Barthélemy / St-Martin
-- sites et groupes exemple
-- relevés et contrôles
-- pièces détachées (liste provisoire)
-- quantité utilisée
-- détection d'un remplacement de la même pièce dans les 21 jours
-- alerte dans l'espace administrateur
-- historique
-- signature et impression PDF
-
-La liste des pièces sera remplacée par le fichier Excel fourni plus tard.
-Les données de cette démo sont stockées localement dans le navigateur et ne constituent pas encore une base sécurisée multi-utilisateurs.
+GE Control V3.4
+- Navigation basse: Accueil, Marche, Relevé, Contrôles, Pièces, Historique, Énergie.
+- Compteur énergie de la semaine en cours.
+- Aucune suppression des anciennes semaines.
+- Onglet Historique énergie accessible séparément.
+- 6 groupes St-Barthélemy: XBPB459, XBNT094, XBPB241, XBXR015, XBNT091, XBNT092.
+- St-Martin présent et prêt à recevoir ses groupes.
+- Rapport hebdomadaire par machine.
+- Les données sont stockées dans Supabase.
+Important: pour limiter l'accès à l'historique énergie à certains techniciens et envoyer automatiquement le rapport chaque vendredi, il faut finaliser les droits côté Supabase/serveur.
