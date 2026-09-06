@@ -2,110 +2,146 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GE Control V3.1</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1f33">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>GE Control V3.4</title>
 <style>
-body{font-family:Arial,sans-serif;background:#f2f4f7;margin:0;color:#101828}
-header{background:#0b1220;color:white;padding:18px}main{max-width:760px;margin:auto;padding:14px}
-.card{background:white;border:1px solid #ddd;border-radius:16px;padding:16px;margin-bottom:12px}
-input,select,button{font:inherit;width:100%;padding:12px;margin:5px 0;border-radius:10px;border:1px solid #ccd2da;box-sizing:border-box}
-button{background:#175cd3;color:white;border:0;font-weight:bold}.secondary{background:#475467}.stop{background:#d92d20}
-.msg{padding:10px;border-radius:10px;background:#f2f4f7;white-space:pre-wrap}.error{background:#fee4e2;color:#b42318}.ok{background:#dcfae6;color:#067647}
-.metric{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}.muted{color:#98a2b3;font-size:13px}
-#app{display:none}
+:root{--nav:#0b1f33;--blue:#1769aa;--green:#18864b;--red:#c62828;--orange:#c76a00;--bg:#f3f5f7;--card:#fff;--line:#d9e0e7;--text:#14202b;--muted:#667085}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;padding-bottom:88px}
+header{background:var(--nav);color:#fff;padding:18px 16px calc(15px + env(safe-area-inset-top));position:sticky;top:0;z-index:10}header h1{margin:0;font-size:22px}header small{opacity:.8}
+main{max-width:920px;margin:auto;padding:12px}.screen{display:none}.screen.active{display:block}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 1px 2px #0001}
+h2{margin:0 0 13px;font-size:18px}h3{margin:10px 0;font-size:15px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}
+label{display:block;font-size:13px;font-weight:650;margin:7px 0 5px}
+input,select,textarea,button{font:inherit;width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}textarea{min-height:82px}
+button{background:var(--blue);color:#fff;border:0;font-weight:750;cursor:pointer;margin-top:7px}button.secondary{background:#475467}button.green{background:var(--green)}button.red{background:var(--red)}button.orange{background:var(--orange)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{width:auto}
+.metric{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eaecf0}.metric:last-child{border-bottom:0}
+.status{padding:12px;border-radius:11px;margin-top:9px;font-weight:800}.on{background:#dcfae6;color:#067647}.off{background:#eef2f6;color:#475467}
+.notice{padding:10px;border-radius:10px;background:#eff8ff;color:#175cd3;font-size:13px}.alert{padding:11px;border-radius:10px;background:#fee4e2;color:#b42318;margin:8px 0;font-size:13px}
+.badge{display:inline-block;padding:4px 8px;border-radius:99px;font-size:11px;font-weight:800;background:#eef2f6}.ok{background:#dcfae6;color:#067647}.bad{background:#fee4e2;color:#b42318}.warn{background:#fff4e5;color:#9a3412}
+.bigstatus{text-align:center;border:1px solid var(--line);border-radius:17px;padding:18px;margin-top:10px}.state{font-size:25px;font-weight:850}.timer{font-size:34px;margin:8px 0;font-variant-numeric:tabular-nums}.kwh{font-size:26px;font-weight:850;margin:7px 0}
+.checkrow{display:grid;grid-template-columns:1fr 110px;align-items:center;border-bottom:1px solid #eaecf0;padding:8px 0}.listitem{border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0;background:#fff}.small{font-size:12px;color:var(--muted)}
+.bottomnav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(7,1fr);padding:7px 4px calc(7px + env(safe-area-inset-bottom));z-index:20}
+.bottomnav button{background:none;color:var(--muted);padding:2px 1px;margin:0;font-size:9px;border:0}.bottomnav button.active{color:var(--blue)}.bottomnav strong{display:block;font-size:18px;line-height:22px}
+#login{max-width:430px;margin:35px auto;padding:14px}.hidden{display:none!important}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;border-bottom:1px solid #eee;padding:8px}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.bottomnav{grid-template-columns:repeat(7,1fr)}}
+@media print{.bottomnav,header,.no-print{display:none!important}.screen{display:block!important}body{padding:0;background:#fff}.card{box-shadow:none;break-inside:avoid}}
 </style>
 </head>
 <body>
-<header><b>⚙️ GE Control V3.1</b><div class="muted">Test connecté à Supabase</div></header>
-<section id="login" style="max-width:430px;margin:30px auto;padding:14px">
-<div class="card"><h2>Connexion technicien</h2>
-<input id="emailInput" type="email" placeholder="Email">
-<input id="passwordInput" type="password" placeholder="Mot de passe">
-<button id="loginBtn">Se connecter</button>
-<button id="signupBtn" class="secondary">Créer le compte technicien</button>
-<div id="loginMsg" class="msg">Prêt.</div>
+<header><h1>⚙️ GE Control</h1><small>V3.4 — énergie hebdomadaire et historique</small></header>
+
+<section id="login">
+<div class="card"><h2>Connexion</h2>
+<label>Email</label><input id="email" type="email">
+<label>Mot de passe</label><input id="password" type="password">
+<button id="loginBtn">Se connecter</button><button id="signupBtn" class="secondary">Créer un compte technicien</button>
+<div id="loginMsg" class="notice">Connecte-toi pour utiliser l'application.</div>
 </div></section>
-<section id="app"><main>
-<div class="card"><button id="logoutBtn" class="secondary">Se déconnecter</button></div>
-<div class="card"><h2>⚡ Démarrage / arrêt</h2>
-<select id="siteSelect"></select><select id="groupSelect"></select><div id="state"></div></div>
-<div class="card"><h2>📝 Relevé moteur</h2>
-<input id="hours" type="number" step=".1" placeholder="Heures moteur">
-<input id="rpm" type="number" placeholder="Régime tr/min">
-<input id="voltage" type="number" placeholder="Tension V">
-<input id="freq" type="number" step=".1" placeholder="Fréquence Hz">
-<input id="oil" type="number" step=".1" placeholder="Pression huile bar">
-<input id="temp" type="number" placeholder="Température °C">
-<select id="critical"><option>Aucune</option><option>Surveillance</option><option>Majeure</option><option>Critique</option></select>
-<input id="anomaly" placeholder="Anomalie (facultatif)">
-<button id="readingBtn">💾 Enregistrer le relevé</button></div>
-<div class="card"><h2>📊 Énergie</h2><div id="energy">Sélectionne un groupe.</div></div>
-<div class="card"><h2>🔧 Pièce utilisée</h2>
-<select id="partSelect"></select><input id="qty" type="number" min="1" value="1">
-<button id="partBtn">Enregistrer la pièce</button><div id="partMsg" class="msg">Aucune pièce enregistrée.</div></div>
-</main></section>
+
+<section id="app" class="hidden"><main>
+<section id="home" class="screen active">
+<div class="card"><h2>🏠 Tableau de bord</h2>
+<div class="grid"><div><div class="metric"><span>Groupes en marche</span><b id="dRun">0</b></div><div class="metric"><span>Relevés</span><b id="dRead">0</b></div></div>
+<div><div class="metric"><span>Énergie cette semaine</span><b id="dWeek">0.0 kWh</b></div><div class="metric"><span>Énergie historique</span><b id="dHist">0.0 kWh</b></div></div></div>
+<p class="small">Le compteur « cette semaine » est calculé pour la semaine en cours. L'historique reste conservé.</p>
+</div>
+<div class="card"><h2>⚡ État des machines</h2><div id="states"></div></div>
+</section>
+
+<section id="marche" class="screen"><div class="card"><h2>⚡ Démarrage / Arrêt</h2>
+<div class="grid"><div><label>Territoire</label><select id="mSite"></select></div><div><label>Groupe</label><select id="mGen"></select></div></div>
+<div id="runPanel"></div><p class="small">Chaque groupe est à 800 kW par défaut. Le compteur kWh est calculé à partir du temps de marche.</p></div>
+<div class="card"><h2>Historique démarrages / arrêts</h2><div id="runHistory"></div></div></section>
+
+<section id="releve" class="screen"><div class="card"><h2>📝 Relevé</h2>
+<div class="grid"><div><label>Territoire</label><select id="rSite"></select></div><div><label>Groupe</label><select id="rGen"></select></div>
+<div><label>Technicien</label><input id="tech"></div><div><label>Date / heure</label><input id="rDate" type="datetime-local"></div>
+<div><label>Heures moteur</label><input id="hours" type="number" step=".1"></div><div><label>Régime tr/min</label><input id="rpm" type="number"></div>
+<div><label>Tension V</label><input id="voltage" type="number" step=".1"></div><div><label>Courant A</label><input id="current" type="number" step=".1"></div>
+<div><label>Fréquence Hz</label><input id="freq" type="number" step=".1"></div><div><label>Puissance kW</label><input id="power" type="number" step=".1"></div>
+<div><label>Pression huile bar</label><input id="oil" type="number" step=".1"></div><div><label>Température °C</label><input id="temp" type="number"></div>
+<div><label>Batterie V</label><input id="battery" type="number" step=".1"></div><div><label>Carburant %</label><input id="fuel" type="number"></div>
+<div class="full"><label>Criticité</label><select id="critic"><option>Aucune</option><option>Surveillance</option><option>Majeure</option><option>Critique</option></select></div>
+<div class="full"><label>Anomalie / observation</label><textarea id="anomaly"></textarea></div></div>
+<button id="saveReading">💾 Enregistrer</button><div id="readMsg"></div></div></section>
+
+<section id="controles" class="screen"><div class="card"><h2>✅ Contrôles de la machine</h2>
+<label>Territoire</label><select id="cSite"></select><label>Groupe</label><select id="cGen"></select>
+<div id="checklist"></div><label>Commentaire</label><textarea id="checkComment"></textarea>
+<button id="saveChecks">💾 Enregistrer les contrôles</button><div id="checkMsg"></div></div></section>
+
+<section id="pieces" class="screen"><div class="card"><h2>🔧 Pièces détachées</h2>
+<p class="notice">Liste de démonstration en attendant ton fichier Excel.</p><label>Territoire</label><select id="pSite"></select><label>Groupe</label><select id="pGen"></select>
+<label>Pièce</label><select id="part"></select><label>Quantité utilisée</label><input id="qty" type="number" min="1" value="1">
+<div id="partAlert"></div><button id="savePart">Enregistrer la pièce</button><div id="partMsg"></div></div></section>
+
+<section id="historique" class="screen"><div class="card"><h2>📊 Historique machine</h2>
+<label>Territoire</label><select id="hSite"></select><label>Groupe</label><select id="hGen"></select><div id="summary"></div></div></section>
+
+<section id="energie" class="screen"><div class="card"><h2>📈 Historique énergie</h2>
+<p class="notice">L'énergie de la semaine en cours est affichée séparément. À chaque nouvelle semaine, le compteur hebdomadaire repart automatiquement à zéro, sans effacer l'historique.</p>
+<label>Territoire</label><select id="eSite"></select><label>Groupe</label><select id="eGen"></select>
+<div id="energyHistory"></div></div></section>
+
+<section id="rapport" class="screen"><div class="card"><h2>📅 Rapport hebdomadaire</h2>
+<label>Semaine du lundi</label><input id="reportDate" type="date"><label>Groupe</label><select id="reportGen"></select>
+<button id="makeReport">Générer</button><button class="secondary" onclick="window.print()">🖨️ Imprimer / PDF</button><div id="report"></div></div></section>
+
+<div class="card"><button id="logout" class="secondary">Se déconnecter</button></div>
+</main>
+<nav class="bottomnav">
+<button class="active" data-go="home"><strong>🏠</strong>Accueil</button>
+<button data-go="marche"><strong>⚡</strong>Marche</button>
+<button data-go="releve"><strong>📝</strong>Relevé</button>
+<button data-go="controles"><strong>✅</strong>Contrôles</button>
+<button data-go="pieces"><strong>🔧</strong>Pièces</button>
+<button data-go="historique"><strong>📊</strong>Historique</button>
+<button data-go="energie"><strong>📈</strong>Énergie</button>
+</nav>
+</section>
+
 <script>
-(function(){
-const URL="https://ecxtvzpzbtddrjysfgfs.supabase.co";
-const KEY="sb_publishable_ynlEBWgJwWJ6T402PUDDEQ_s4ZUkb5J";
-let token=localStorage.getItem("ge_access_token")||"", sites=[], groups=[], runs=[];
-const $=id=>document.getElementById(id);
-function show(el,text,error){el.textContent=text;el.className="msg "+(error?"error":"ok")}
-async function auth(path,body){
- const r=await fetch(URL+"/auth/v1/"+path,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
- const t=await r.text();let d;try{d=t?JSON.parse(t):null}catch{d=null}
- if(!r.ok)throw Error(d?.msg||d?.error_description||d?.message||t||("HTTP "+r.status));return d
-}
-async function api(path,opt={}){
- const h=Object.assign({"apikey":KEY,"Content-Type":"application/json"},opt.headers||{});
- if(token)h.Authorization="Bearer "+token;
- const r=await fetch(URL+"/rest/v1/"+path,Object.assign({},opt,{headers:h}));
- const t=await r.text();let d;try{d=t?JSON.parse(t):null}catch{d=t}
- if(!r.ok)throw Error(d?.message||d?.hint||t||("HTTP "+r.status));return d
-}
-$("loginBtn").onclick=async()=>{
- const email=$("emailInput").value.trim(),password=$("passwordInput").value;
- if(!email||!password){show($("loginMsg"),"Renseigne l'email et le mot de passe.",true);return}
- $("loginBtn").disabled=true;$("loginBtn").textContent="Connexion...";
- try{const d=await auth("token?grant_type=password",{email,password});token=d.access_token;localStorage.setItem("ge_access_token",token);await app()}
- catch(e){show($("loginMsg"),"Erreur : "+e.message,true)}
- $("loginBtn").disabled=false;$("loginBtn").textContent="Se connecter";
-};
-$("signupBtn").onclick=async()=>{
- const email=$("emailInput").value.trim(),password=$("passwordInput").value;
- if(!email||!password){show($("loginMsg"),"Renseigne l'email et le mot de passe.",true);return}
- try{const d=await auth("signup",{email,password});if(d.access_token){token=d.access_token;localStorage.setItem("ge_access_token",token);await app()}else show($("loginMsg"),"Compte créé. Vérifie ton email si une confirmation est demandée, puis connecte-toi.");}
- catch(e){show($("loginMsg"),"Erreur : "+e.message,true)}
-};
-$("logoutBtn").onclick=()=>{localStorage.removeItem("ge_access_token");location.reload()};
-$("siteSelect").onchange=loadGroups;$("groupSelect").onchange=render;
-$("readingBtn").onclick=saveReading;$("partBtn").onclick=savePart;
-async function app(){
- $("login").style.display="none";$("app").style.display="block";
- try{
-  sites=await api("ge_sites?select=id,name&order=name");
-  $("siteSelect").innerHTML=sites.map(s=>`<option value="${s.id}">${s.name}</option>`).join("");
-  await loadGroups();
-  const parts=await api("ge_parts?select=id,name&order=name");
-  $("partSelect").innerHTML=parts.map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
- }catch(e){document.body.insertAdjacentHTML("afterbegin",'<div class="msg error">'+e.message+'</div>')}
-}
-async function loadGroups(){
- groups=await api("ge_generators?select=id,site_id,name,power_kw&site_id=eq."+encodeURIComponent($("siteSelect").value)+"&order=name");
- $("groupSelect").innerHTML=groups.map(g=>`<option value="${g.id}">${g.name}</option>`).join("");await render()
-}
-async function render(){
- const id=$("groupSelect").value;if(!id)return;
- runs=await api("ge_runs?select=*&generator_id=eq."+encodeURIComponent(id)+"&order=started_at.desc&limit=50");
- const a=runs.find(r=>!r.stopped_at);
- if(a){const sec=(Date.now()-new Date(a.started_at))/1000;$("state").innerHTML='<div class="metric"><b>🟢 EN MARCHE</b><span>'+(sec/3600).toFixed(2)+' h</span></div><button id="stopBtn" class="stop">⏹️ ARRÊTER</button>';$("stopBtn").onclick=stopRun;$("energy").innerHTML='<div class="metric"><span>Puissance</span><b>'+a.power_kw+' kW</b></div><div class="metric"><span>Énergie estimée</span><b>'+((sec/3600)*Number(a.power_kw)).toFixed(1)+' kWh</b></div>'}
- else{$("state").innerHTML='<div class="metric"><b>⚪ ARRÊTÉ</b></div><button id="startBtn">▶️ DÉMARRER</button>';$("startBtn").onclick=startRun;const total=runs.reduce((s,r)=>s+Number(r.energy_kwh||0),0);$("energy").innerHTML='<div class="metric"><span>Énergie historique</span><b>'+total.toFixed(1)+' kWh</b></div>'}
-}
-async function startRun(){const g=groups.find(x=>x.id===$("groupSelect").value);await api("ge_runs",{method:"POST",body:JSON.stringify({generator_id:g.id,power_kw:g.power_kw})});await render()}
-async function stopRun(){const r=runs.find(x=>!x.stopped_at);if(!r)return;const d=new Date(),sec=(d-new Date(r.started_at))/1000;await api("ge_runs?id=eq."+r.id,{method:"PATCH",body:JSON.stringify({stopped_at:d.toISOString(),duration_seconds:Math.round(sec),energy_kwh:sec/3600*Number(r.power_kw)})});await render()}
-async function saveReading(){try{await api("ge_readings",{method:"POST",body:JSON.stringify({generator_id:$("groupSelect").value,engine_hours:$("hours").value||null,rpm:$("rpm").value||null,voltage:$("voltage").value||null,frequency:$("freq").value||null,oil_pressure:$("oil").value||null,temperature:$("temp").value||null,criticality:$("critical").value,anomaly:$("anomaly").value||null})});alert("Relevé enregistré.")}catch(e){alert("Erreur : "+e.message)}}
-async function savePart(){try{const r=await api("ge_readings?generator_id=eq."+encodeURIComponent($("groupSelect").value)+"&order=created_at.desc&limit=1");if(!r.length){show($("partMsg"),"Enregistre d'abord un relevé.",true);return}await api("ge_used_parts",{method:"POST",body:JSON.stringify({reading_id:r[0].id,part_id:$("partSelect").value,quantity:Number($("qty").value)||1})});show($("partMsg"),"Pièce enregistrée.")}catch(e){show($("partMsg"),"Erreur : "+e.message,true)}}
-if(token)app();
-})();
+const URL="https://ecxtvpzbtddrjysfgfs.supabase.co", KEY="sb_publishable_ynlEBWgJwW6T402PUDDEQ_s4ZUkb5J";
+let token=localStorage.getItem("ge_token")||"",sites=[],groups=[],parts=[],currentTab="home";
+const checks=["Niveau d'huile","Liquide de refroidissement","Absence de fuite","Batterie / cosses","Courroies","Filtre à air","Échappement","Arrêt d'urgence","Démarrage automatique","Inverseur réseau / groupe","Alarmes tableau","État général"];
+const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+function startOfWeek(d=new Date()){d=new Date(d);let day=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-day);return d}
+function iso(d){return new Date(d).toLocaleString("fr-FR")}
+async function auth(path,body){let r=await fetch(URL+"/auth/v1/"+path,{method:"POST",headers:{"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify(body)}),t=await r.text(),j={};try{j=t?JSON.parse(t):{}}catch{}if(!r.ok)throw Error(j.msg||j.error_description||j.message||t);return j}
+async function api(path,opt={}){let h=Object.assign({"apikey":KEY,"Content-Type":"application/json"},opt.headers||{});if(token)h.Authorization="Bearer "+token;let r=await fetch(URL+"/rest/v1/"+path,Object.assign({},opt,{headers:h})),t=await r.text(),j;try{j=t?JSON.parse(t):null}catch{j=t}if(!r.ok)throw Error(j?.message||j?.hint||t);return j}
+$("loginBtn").onclick=async()=>{try{let d=await auth("token?grant_type=password",{email:$("email").value.trim(),password:$("password").value});token=d.access_token;localStorage.setItem("ge_token",token);init()}catch(e){$("loginMsg").textContent=e.message;$("loginMsg").className="alert"}};
+$("signupBtn").onclick=async()=>{try{let d=await auth("signup",{email:$("email").value.trim(),password:$("password").value});if(d.access_token){token=d.access_token;localStorage.setItem("ge_token",token);init()}else{$("loginMsg").textContent="Compte créé. Vérifie l'email si demandé puis connecte-toi.";$("loginMsg").className="notice"}}catch(e){$("loginMsg").textContent=e.message;$("loginMsg").className="alert"}};
+$("logout").onclick=()=>{localStorage.removeItem("ge_token");location.reload()};
+document.querySelectorAll(".bottomnav button").forEach(b=>b.onclick=()=>{currentTab=b.dataset.go;document.querySelectorAll(".bottomnav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(currentTab).classList.add("active");loadTab()});
+$("mSite").onchange=()=>fillGroups("mSite","mGen");$("rSite").onchange=()=>fillGroups("rSite","rGen");$("cSite").onchange=()=>fillGroups("cSite","cGen");$("pSite").onchange=()=>fillGroups("pSite","pGen");$("hSite").onchange=()=>fillGroups("hSite","hGen");$("eSite").onchange=()=>fillGroups("eSite","eGen");
+["mGen","rGen","cGen","pGen","hGen","eGen"].forEach(id=>$(id).onchange=()=>{if(id==="mGen")refreshRun();if(id==="pGen")checkPart();if(id==="hGen")loadHistory();if(id==="eGen")loadEnergy()});
+$("part").onchange=checkPart;
+async function init(){try{$("login").classList.add("hidden");$("app").classList.remove("hidden");sites=await api("ge_sites?select=id,name&order=name");parts=await api("ge_parts?select=id,name&order=name");$("part").innerHTML=parts.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");fillSites();$("reportDate").value=startOfWeek().toISOString().slice(0,10);await loadAll();}catch(e){document.body.insertAdjacentHTML("afterbegin",`<div class="alert">${esc(e.message)}</div>`)}}
+function fillSites(){["mSite","rSite","cSite","pSite","hSite","eSite"].forEach(id=>$(id).innerHTML=sites.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join(""));for(const x of [["mSite","mGen"],["rSite","rGen"],["cSite","cGen"],["pSite","pGen"],["hSite","hGen"],["eSite","eGen"]])fillGroups(...x)}
+function fillGroups(s,g){const a=groups.filter(x=>x.site_id===$(s).value);$(g).innerHTML=a.map(x=>`<option value="${x.id}">${esc(x.name)} — ${esc(x.power_kw)} kW</option>`).join("")||"<option value=''>Aucun groupe</option>"}
+async function loadAll(){groups=await api("ge_generators?select=id,site_id,name,power_kw&order=name");fillSites();await renderDashboard();await refreshRun();await loadHistory();await loadEnergy()}
+async function refreshRun(){const gid=$("mGen").value;if(!gid)return;const rs=await api("ge_runs?select=*&generator_id=eq."+gid+"&order=started_at.desc&limit=100");const a=rs.find(r=>!r.stopped_at),g=groups.find(x=>x.id===gid);if(a){let sec=(Date.now()-new Date(a.started_at))/1000;$("runPanel").innerHTML=`<div class="bigstatus"><div class="state">🟢 EN MARCHE</div><div>Depuis ${iso(a.started_at)}</div><div class="timer">${fmt(sec)}</div><div>Puissance : <b>${g.power_kw} kW</b></div><div class="kwh">≈ ${(sec/3600*Number(g.power_kw)).toFixed(1)} kWh</div><button class="red" onclick="stopRun()">⏹️ ARRÊTER</button></div>`}else $("runPanel").innerHTML=`<div class="bigstatus"><div class="state">⚪ ARRÊTÉ</div><div>Puissance : <b>${g?.power_kw||800} kW</b></div><button class="green" onclick="startRun()">▶️ DÉMARRER</button></div>`;$("runHistory").innerHTML=rs.map(r=>`<div class="listitem">${iso(r.started_at)} → ${r.stopped_at?iso(r.stopped_at):"<span class='badge ok'>EN COURS</span>"}<br>${r.duration_seconds?(r.duration_seconds/3600).toFixed(2)+" h":""} · ${r.energy_kwh?Number(r.energy_kwh).toFixed(1)+" kWh":""}</div>`).join("")}
+function fmt(sec){sec=Math.floor(sec);let h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return[h,m,s].map(x=>String(x).padStart(2,"0")).join(":")}
+async function startRun(){try{const g=groups.find(x=>x.id===$("mGen").value);await api("ge_runs",{method:"POST",body:JSON.stringify({generator_id:g.id,power_kw:g.power_kw})});await loadAll()}catch(e){alert(e.message)}}
+async function stopRun(){try{const rs=await api("ge_runs?select=*&generator_id=eq."+$("mGen").value+"&order=started_at.desc&limit=20"),r=rs.find(x=>!x.stopped_at);if(!r)return;const d=new Date(),sec=(d-new Date(r.started_at))/1000;await api("ge_runs?id=eq."+r.id,{method:"PATCH",body:JSON.stringify({stopped_at:d.toISOString(),duration_seconds:Math.round(sec),energy_kwh:sec/3600*Number(r.power_kw)})});await loadAll()}catch(e){alert(e.message)}}
+async function renderDashboard(){let rs=await api("ge_runs?select=*&order=started_at.desc&limit=500"),w=startOfWeek(),run=rs.filter(r=>!r.stopped_at),week=rs.reduce((s,r)=>{let d=new Date(r.started_at);return d>=w?s+Number(r.energy_kwh||(!r.stopped_at?(Date.now()-d)/3600000*Number(r.power_kw):0)):s},0),hist=rs.reduce((s,r)=>s+Number(r.energy_kwh||0),0),read=await api("ge_readings?select=id&limit=1000");$("dRun").textContent=run.length;$("dRead").textContent=read.length;$("dWeek").textContent=week.toFixed(1)+" kWh";$("dHist").textContent=hist.toFixed(1)+" kWh";$("states").innerHTML=groups.map(g=>{let r=run.find(x=>x.generator_id===g.id);return `<div class="listitem"><b>${esc(g.name)}</b><br>${esc(sites.find(s=>s.id===g.site_id)?.name||"")} · ${r?`<span class="badge ok">EN MARCHE</span>`:"<span class='badge'>ARRÊTÉ</span>"}</div>`}).join("")}
+async function saveReading(){try{let row={generator_id:$("rGen").value,engine_hours:$("hours").value||null,rpm:$("rpm").value||null,voltage:$("voltage").value||null,current:$("current").value||null,frequency:$("freq").value||null,power:$("power").value||null,oil_pressure:$("oil").value||null,temperature:$("temp").value||null,battery:$("battery").value||null,fuel:$("fuel").value||null,criticality:$("critic").value,anomaly:$("anomaly").value||null};await api("ge_readings",{method:"POST",body:JSON.stringify(row)});$("readMsg").innerHTML="<div class='msg success'>Relevé enregistré.</div>";renderDashboard()}catch(e){$("readMsg").innerHTML=`<div class='alert'>${esc(e.message)}</div>`}}
+$("saveReading").onclick=saveReading;
+$("checklist").innerHTML=checks.map((x,i)=>`<div class="checkrow"><label>${x}</label><select id="ck${i}"><option>OK</option><option>NOK</option><option>N/A</option></select></div>`).join("");
+$("saveChecks").onclick=async()=>{try{let o={};checks.forEach((x,i)=>o[x]=$("ck"+i).value);await api("ge_readings",{method:"POST",body:JSON.stringify({generator_id:$("cGen").value,criticality:Object.values(o).includes("NOK")?"Majeure":"Aucune",anomaly:$("checkComment").value||null,checklist:o})});$("checkMsg").innerHTML="<div class='msg success'>Contrôles enregistrés.</div>"}catch(e){$("checkMsg").innerHTML=`<div class='alert'>${esc(e.message)}</div>`}};
+async function checkPart(){try{let rows=await api("ge_used_parts?select=created_at,part_id,ge_readings!inner(generator_id)&part_id=eq."+encodeURIComponent($("part").value)+"&ge_readings.generator_id=eq."+encodeURIComponent($("pGen").value)+"&order=created_at.desc&limit=1");$("partAlert").innerHTML=rows.length&&Date.now()-new Date(rows[0].created_at)<21*86400000?"<div class='alert'>⚠️ Cette pièce a déjà été utilisée sur cette machine il y a moins de 3 semaines.</div>":""}catch{$("partAlert").innerHTML=""}}
+$("savePart").onclick=async()=>{try{let rr=await api("ge_readings?select=id&generator_id=eq."+encodeURIComponent($("pGen").value)+"&order=created_at.desc&limit=1");if(!rr.length){$("partMsg").innerHTML="<div class='alert'>Enregistre d'abord un relevé.</div>";return}await api("ge_used_parts",{method:"POST",body:JSON.stringify({reading_id:rr[0].id,part_id:$("part").value,quantity:+$("qty").value||1})});$("partMsg").innerHTML="<div class='msg success'>Pièce enregistrée.</div>";checkPart()}catch(e){$("partMsg").innerHTML=`<div class='alert'>${esc(e.message)}</div>`}};
+async function loadHistory(){try{let gid=$("hGen").value;if(!gid)return;let r=await api("ge_readings?select=*&generator_id=eq."+gid+"&order=created_at.desc&limit=100"),rs=await api("ge_runs?select=*&generator_id=eq."+gid+"&order=started_at.desc&limit=100");let h=rs.reduce((s,x)=>s+Number(x.duration_seconds||0)/3600,0),k=rs.reduce((s,x)=>s+Number(x.energy_kwh||0),0);$("summary").innerHTML=`<div class='metric'><span>Relevés</span><b>${r.length}</b></div><div class='metric'><span>Heures marche</span><b>${h.toFixed(2)} h</b></div><div class='metric'><span>Énergie historique</span><b>${k.toFixed(1)} kWh</b></div><h3>Derniers relevés</h3>`+r.slice(0,20).map(x=>`<div class='listitem'>${iso(x.created_at)} · ${esc(x.criticality||"Aucune")}<br>${esc(x.temperature??"-")} °C · ${esc(x.oil_pressure??"-")} bar · ${esc(x.voltage??"-")} V · ${esc(x.frequency??"-")} Hz<br>${esc(x.anomaly||"Aucune anomalie")}</div>`).join("")}catch(e){$("summary").innerHTML=`<div class='alert'>${esc(e.message)}</div>`}}
+async function loadEnergy(){try{let gid=$("eGen").value;if(!gid)return;let rs=await api("ge_runs?select=*&generator_id=eq."+gid+"&order=started_at.desc&limit=500");let weeks={};rs.forEach(r=>{if(!r.energy_kwh)return;let w=startOfWeek(r.started_at).toISOString().slice(0,10);weeks[w]=(weeks[w]||0)+Number(r.energy_kwh)});let current=startOfWeek().toISOString().slice(0,10);$("energyHistory").innerHTML=`<div class='metric'><span>Semaine en cours (${current})</span><b>${(weeks[current]||0).toFixed(1)} kWh</b></div>`+Object.entries(weeks).sort((a,b)=>b[0].localeCompare(a[0])).map(([w,k])=>`<div class='listitem'><b>Semaine du ${new Date(w+"T00:00:00").toLocaleDateString("fr-FR")}</b><br>${k.toFixed(1)} kWh ${w===current?"<span class='badge ok'>EN COURS</span>":""}</div>`).join("")}catch(e){$("energyHistory").innerHTML=`<div class='alert'>${esc(e.message)}</div>`}}
+async function makeReport(){try{let gid=$("hGen").value,start=startOfWeek($("reportDate").value),end=new Date(start);end.setDate(end.getDate()+7);let g=groups.find(x=>x.id===gid),[rs,read]=await Promise.all([api(`ge_runs?select=*&generator_id=eq.${gid}&started_at=gte.${start.toISOString()}&started_at=lt.${end.toISOString()}`),api(`ge_readings?select=*&generator_id=eq.${gid}&created_at=gte.${start.toISOString()}&created_at=lt.${end.toISOString()}`)]);let h=rs.reduce((s,x)=>s+Number(x.duration_seconds||0)/3600,0),k=rs.reduce((s,x)=>s+Number(x.energy_kwh||0),0);$("report").innerHTML=`<div class='card'><h3>${esc(g.name)}</h3><p>Semaine du ${start.toLocaleDateString("fr-FR")}</p><div class='metric'><span>Heures de fonctionnement</span><b>${h.toFixed(2)} h</b></div><div class='metric'><span>Énergie</span><b>${k.toFixed(1)} kWh</b></div><div class='metric'><span>Démarrages</span><b>${rs.length}</b></div><div class='metric'><span>Relevés</span><b>${read.length}</b></div><h3>Anomalies</h3>${read.map(r=>`<div class='listitem'>${iso(r.created_at)} · ${esc(r.criticality)}<br>${esc(r.anomaly||"Aucune anomalie")}</div>`).join("")||"Aucune"}</div>`}catch(e){$("report").innerHTML=`<div class='alert'>${esc(e.message)}</div>`}}
+function loadTab(){if(currentTab==="historique")loadHistory();if(currentTab==="energie")loadEnergy();if(currentTab==="pieces")checkPart();if(currentTab==="home")renderDashboard()}
+if(token)init();else $("rDate").value=dateLocal();
+function dateLocal(){return new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16)}
+setInterval(()=>{if(currentTab==="marche")refreshRun();if(currentTab==="home")renderDashboard()},30000);
 </script>
 </body></html>
