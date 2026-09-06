@@ -1,0 +1,8 @@
+GE Control V3 connectée
+1. Mets index.html dans ton hébergement (GitHub Pages, Netlify, Vercel, etc.).
+2. Ouvre le site.
+3. Crée un compte technicien avec un email/mot de passe.
+4. Connecte-toi.
+5. Teste les groupes, démarrage/arrêt, kWh et relevés.
+
+Important : cette version de test met technician_id à NULL pour simplifier le premier test. La prochaine étape peut lier automatiquement chaque opération à l'utilisateur connecté et ajouter les alertes administrateur.

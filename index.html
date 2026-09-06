@@ -2,123 +2,138 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b1220">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>GE Control — Démo</title>
+<title>GE Control V3</title>
 <style>
-:root{--bg:#f2f4f7;--card:#fff;--ink:#101828;--muted:#667085;--line:#d0d5dd;--blue:#175cd3;--green:#067647;--orange:#b54708;--red:#b42318}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:78px}
-header{background:#0b1220;color:#fff;padding:18px 16px calc(16px + env(safe-area-inset-top));position:sticky;top:0;z-index:4}header h1{margin:0;font-size:22px}header p{margin:4px 0 0;color:#cbd5e1;font-size:13px}
-main{max-width:850px;margin:auto;padding:12px}.screen{display:none}.screen.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px}.card h2{font-size:17px;margin:0 0 13px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}.full{grid-column:1/-1}
-label{font-size:13px;font-weight:650}input,select,textarea{font:inherit;padding:11px;border:1px solid var(--line);border-radius:10px;background:white;width:100%}textarea{min-height:82px}
-.btn{border:0;border-radius:11px;padding:12px 14px;font-weight:750;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#eef2f6}.danger{background:#fee4e2;color:var(--red)}
-.actions{display:flex;flex-wrap:wrap;gap:8px}.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 5px calc(8px + env(safe-area-inset-bottom));z-index:8}.nav button{border:0;background:none;color:var(--muted);font-size:11px}.nav button strong{display:block;font-size:20px}.nav button.active{color:var(--blue)}
-.metric{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #eaecf0}.metric:last-child{border:0}
-.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800}.ok{background:#dcfae6;color:var(--green)}.warn{background:#fef0c7;color:var(--orange)}.bad{background:#fee4e2;color:var(--red)}
-.notice{padding:10px;border-radius:10px;background:#eff8ff;color:#175cd3;font-size:13px}.alert{padding:12px;border-radius:12px;background:#fee4e2;color:var(--red);margin:8px 0;font-size:13px}.listitem{border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0;background:white}.listitem h3{margin:0 0 4px;font-size:15px}.listitem p{margin:3px 0;color:var(--muted);font-size:12px}
-.control{display:grid;grid-template-columns:1fr 105px;gap:8px;align-items:center;border-bottom:1px solid #eaecf0;padding:9px 0}
-.signature{border:1px dashed #98a2b3;border-radius:12px;overflow:hidden;background:#fff}.signature canvas{width:100%;height:150px;display:block;touch-action:none}
-@media(max-width:560px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
-@media print{header,.nav,.no-print{display:none!important}.screen{display:block!important}body{background:#fff}.card{break-inside:avoid}}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f2f4f7;margin:0;color:#101828}
+header{background:#0b1220;color:#fff;padding:18px}main{max-width:760px;margin:auto;padding:14px}.card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:15px;margin-bottom:12px}
+select,input,button{font:inherit;padding:11px;border-radius:10px;border:1px solid #ccd2da;box-sizing:border-box;width:100%;margin:4px 0}
+button{background:#175cd3;color:#fff;border:0;font-weight:700}.stop{background:#d92d20}.muted{color:#667085;font-size:13px}.metric{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #eee}
+#app{display:none}.error{background:#fee4e2;color:#b42318;padding:10px;border-radius:10px}
 </style>
 </head>
 <body>
-<header><h1>⚙️ GE Control — Démo</h1><p>Version de démonstration pour iPhone</p></header>
-<main>
-<section id="home" class="screen active">
-<div class="card"><h2>Tableau de bord</h2><div id="dash"></div></div>
-<div class="card"><h2>Alertes administrateur</h2><div id="alerts"></div></div>
-<div class="card"><h2>Derniers relevés</h2><div id="recent"></div></div>
-</section>
+<header><b>⚙️ GE Control V3</b><div class="muted">Version test connectée à Supabase</div></header>
 
-<section id="releve" class="screen">
-<form id="form">
-<div class="card"><h2>1. Identification</h2><div class="grid">
-<div class="field"><label>Territoire</label><select id="territoire" onchange="updateSites()"><option>St-Barthélemy</option><option>St-Martin</option></select></div>
-<div class="field"><label>Site</label><select id="site" onchange="updateGroups()"></select></div>
-<div class="field"><label>Groupe électrogène</label><select id="groupe"></select></div>
-<div class="field"><label>Technicien</label><input id="technicien" required placeholder="Nom"></div>
-<div class="field"><label>Date / heure</label><input id="date" type="datetime-local" required></div>
+<div id="login" style="max-width:420px;margin:30px auto;padding:15px">
+<div class="card"><h2>Connexion technicien</h2>
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Mot de passe">
+<button onclick="login()">Se connecter</button>
+<button style="background:#475467" onclick="signup()">Créer le compte technicien</button>
+<div id="msg"></div>
 </div></div>
 
-<div class="card"><h2>2. Relevés</h2><div class="grid">
-<div class="field"><label>Heures moteur (h)</label><input data-k="heures" type="number" step=".1"></div>
-<div class="field"><label>Régime (tr/min)</label><input data-k="rpm" type="number"></div>
-<div class="field"><label>Tension (V)</label><input data-k="tension" type="number" step=".1"></div>
-<div class="field"><label>Courant (A)</label><input data-k="courant" type="number" step=".1"></div>
-<div class="field"><label>Fréquence (Hz)</label><input data-k="frequence" type="number" step=".1"></div>
-<div class="field"><label>Puissance (kW)</label><input data-k="puissance" type="number" step=".1"></div>
-<div class="field"><label>Pression huile (bar)</label><input data-k="huile" type="number" step=".1"></div>
-<div class="field"><label>Température (°C)</label><input data-k="temperature" type="number" step=".1"></div>
-<div class="field"><label>Batterie (V)</label><input data-k="batterie" type="number" step=".1"></div>
-<div class="field"><label>Carburant (%)</label><input data-k="carburant" type="number" min="0" max="100"></div>
-</div><div id="auto" class="notice">Les seuils seront contrôlés automatiquement.</div></div>
+<div id="app"><main>
+<div class="card"><button style="background:#475467" onclick="logout()">Se déconnecter</button></div>
 
-<div class="card"><h2>3. Checklist</h2><div id="checks"></div></div>
-
-<div class="card"><h2>4. Pièces détachées utilisées</h2>
-<p class="notice">Démo : la liste ci-dessous sera remplacée par ton fichier Excel.</p>
-<div class="grid">
-<div class="field"><label>Pièce</label><select id="piece">
-<option>Filtre à huile</option><option>Filtre à carburant</option><option>Filtre à air</option><option>Courroie</option><option>Liquide de refroidissement</option><option>Batterie</option><option>Joint</option><option>Autre</option>
-</select></div>
-<div class="field"><label>Quantité utilisée</label><input id="qty" type="number" min="1" value="1"></div>
-</div>
-<div id="recentPartAlert"></div>
-<button type="button" class="btn secondary no-print" onclick="addPart()">＋ Ajouter la pièce</button>
-<div id="partsList"></div>
+<div class="card"><h2>⚡ Démarrage / arrêt</h2>
+<label>Site</label><select id="site" onchange="loadGroups()"></select>
+<label>Groupe</label><select id="group"></select>
+<div id="state"></div>
 </div>
 
-<div class="card"><h2>5. Anomalie</h2><div class="grid">
-<div class="field"><label>Criticité</label><select id="criticite"><option>Aucune</option><option>Surveillance</option><option>Majeure</option><option>Critique</option></select></div>
-<div class="field full"><label>Description</label><textarea id="anomalie" placeholder="Décrire l'anomalie..."></textarea></div>
-<div class="field full"><label>Action / recommandation</label><textarea id="action"></textarea></div>
-</div></div>
+<div class="card"><h2>📝 Relevé</h2>
+<input id="hours" type="number" step=".1" placeholder="Heures moteur">
+<input id="rpm" type="number" placeholder="Régime tr/min">
+<input id="voltage" type="number" placeholder="Tension V">
+<input id="freq" type="number" step=".1" placeholder="Fréquence Hz">
+<input id="oil" type="number" step=".1" placeholder="Pression huile bar">
+<input id="temp" type="number" placeholder="Température °C">
+<select id="critical"><option>Aucune</option><option>Surveillance</option><option>Majeure</option><option>Critique</option></select>
+<input id="anomaly" placeholder="Anomalie (facultatif)">
+<button onclick="saveReading()">💾 Enregistrer le relevé</button>
+</div>
 
-<div class="card"><h2>6. Signature</h2><div class="signature"><canvas id="sig"></canvas></div><button type="button" class="btn secondary no-print" onclick="clearSig()">Effacer</button></div>
-<div class="card no-print"><div class="actions"><button class="btn primary" type="submit">💾 Enregistrer le relevé</button><button type="button" class="btn secondary" onclick="window.print()">📄 Rapport PDF</button></div></div>
-</form>
-</section>
-
-<section id="historique" class="screen"><div class="card"><h2>Historique</h2><input id="search" placeholder="Rechercher..." oninput="renderHistory()"><div id="history"></div></div></section>
-
-<section id="admin" class="screen"><div class="card"><h2>👤 Compte administrateur — Démo</h2><p class="notice">Cet écran simule les notifications qui seront envoyées au véritable compte administrateur dans la version sécurisée.</p><div id="adminAlerts"></div></div></section>
-</main>
-<nav class="nav">
-<button class="active" onclick="show('home',this)"><strong>⌂</strong>Accueil</button>
-<button onclick="show('releve',this)"><strong>＋</strong>Relevé</button>
-<button onclick="show('historique',this)"><strong>☷</strong>Historique</button>
-<button onclick="show('admin',this)"><strong>🔔</strong>Admin</button>
-</nav>
+<div class="card"><h2>📊 Énergie</h2><div id="energy">Sélectionne un groupe.</div></div>
+<div class="card"><h2>🔧 Pièce utilisée</h2>
+<select id="part"></select><input id="qty" type="number" min="1" value="1">
+<button onclick="savePart()">Enregistrer la pièce</button>
+<div id="partMsg" class="muted"></div></div>
+</main></div>
 
 <script>
-const KEY="ge_demo_records";
-const dataSites={"St-Barthélemy":{"Site Exemple A":["GE-SB-001","GE-SB-002"],"Site Exemple B":["GE-SB-003"]},"St-Martin":{"Site Exemple C":["GE-SM-001","GE-SM-002"],"Site Exemple D":["GE-SM-003"]}};
-const checks=["Niveau d'huile","Liquide refroidissement","Absence de fuite","Batterie / cosses","Courroies","Échappement","Arrêt d'urgence","Démarrage automatique","Inverseur réseau / groupe","Alarmes tableau"];
-document.getElementById("checks").innerHTML=checks.map((x,i)=>`<div class="control"><label>${x}</label><select id="ck${i}"><option>OK</option><option>NOK</option><option>N/A</option></select></div>`).join("");
-const date=document.getElementById("date");date.value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
-function updateSites(){site.innerHTML=Object.keys(dataSites[territoire.value]).map(x=>`<option>${x}</option>`).join("");updateGroups()}
-function updateGroups(){groupe.innerHTML=(dataSites[territoire.value][site.value]||[]).map(x=>`<option>${x}</option>`).join("");checkRecentPart()}
-updateSites();
-document.querySelectorAll("[data-k]").forEach(x=>x.addEventListener("input",checkAuto));
-piece.addEventListener("change",checkRecentPart);groupe.addEventListener("change",checkRecentPart);
-let parts=[];
-function records(){return JSON.parse(localStorage.getItem(KEY)||"[]")}
-function checkAuto(){let t=+document.querySelector('[data-k="tension"]').value,f=+document.querySelector('[data-k="frequence"]').value,o=+document.querySelector('[data-k="huile"]').value,temp=+document.querySelector('[data-k="temperature"]').value,b=+document.querySelector('[data-k="batterie"]').value,fu=+document.querySelector('[data-k="carburant"]').value;let out=[];if(t)out.push(`<span class="badge ${t>=380&&t<=420?"ok":"bad"}">Tension ${t>=380&&t<=420?"OK":"NOK"}</span>`);if(f)out.push(`<span class="badge ${f>=49&&f<=51?"ok":"bad"}">Fréquence ${f>=49&&f<=51?"OK":"NOK"}</span>`);if(o)out.push(`<span class="badge ${o>=2?"ok":"bad"}">Huile ${o>=2?"OK":"NOK"}</span>`);if(temp)out.push(`<span class="badge ${temp<95?"ok":"bad"}">Température ${temp<95?"OK":"NOK"}</span>`);if(b)out.push(`<span class="badge ${b>=24?"ok":"bad"}">Batterie ${b>=24?"OK":"NOK"}</span>`);if(fu)out.push(`<span class="badge ${fu>=20?"ok":"bad"}">Carburant ${fu>=20?"OK":"NOK"}</span>`);document.getElementById("auto").innerHTML=out.join(" ")||"Les seuils seront contrôlés automatiquement."}
-function checkRecentPart(){let g=groupe.value,p=piece.value,now=Date.now(),found=records().find(r=>r.groupe===g&&(r.parts||[]).some(x=>x.name===p)&&now-r.id<21*86400000);document.getElementById("recentPartAlert").innerHTML=found?`<div class="alert">⚠️ <b>Attention :</b> ${p} a déjà été remplacée sur ${g} il y a moins de 3 semaines. Le remplacement reste possible.</div>`:""}
-function addPart(){let p=piece.value,q=Math.max(1,+qty.value||1);parts.push({name:p,qty:q});renderParts();checkRecentPart()}
-function renderParts(){document.getElementById("partsList").innerHTML=parts.map((x,i)=>`<div class="metric"><span>${esc(x.name)} × ${x.qty}</span><button type="button" class="btn danger" onclick="parts.splice(${i},1);renderParts()">Supprimer</button></div>`).join("")}
-document.getElementById("form").addEventListener("submit",e=>{e.preventDefault();let a=records();let checks={};checks.forEach;for(let i=0;i<checks.length;i++)checks[checks[i]]=document.getElementById("ck"+i).value;let r={id:Date.now(),territoire:territoire.value,site:site.value,groupe:groupe.value,technicien:technicien.value,date:date.value,values:{},checks,parts:[...parts],criticite:criticite.value,anomalie:anomalie.value,action:action.value};document.querySelectorAll("[data-k]").forEach(x=>r.values[x.dataset.k]=x.value);a.unshift(r);localStorage.setItem(KEY,JSON.stringify(a));renderAll();alert("Relevé enregistré. Si une pièce a été remplacée récemment, une alerte administrateur a été générée.");});
-function renderAll(){renderDash();renderHistory();renderAdmin()}
-function renderDash(){let a=records(),alerts=a.filter(r=>r.parts?.some(p=>records().some(q=>q!==r&&q.groupe===r.groupe&&q.parts?.some(x=>x.name===p.name)&&r.id-q.id<21*86400000))||Object.values(r.checks||{}).includes("NOK")||["Majeure","Critique"].includes(r.criticite));dash.innerHTML=`<div class="metric"><span>Relevés</span><b>${a.length}</b></div><div class="metric"><span>Alertes</span><b class="${alerts.length?'bad':''}">${alerts.length}</b></div>`;recent.innerHTML=a.slice(0,5).map(r=>`<div class="listitem"><h3>${esc(r.groupe)} — ${esc(r.site)}</h3><p>${new Date(r.date).toLocaleString("fr-FR")} · ${esc(r.technicien)}</p></div>`).join("")||"<p>Aucun relevé.</p>";document.getElementById("alerts").innerHTML=alerts.slice(0,5).map(r=>`<div class="alert">⚠️ ${esc(r.groupe)} — ${esc(r.criticite)}${r.parts?.length?" · pièce utilisée":""}</div>`).join("")||"<span class='badge ok'>Aucune alerte</span>"}
-function renderHistory(){let q=(document.getElementById("search")?.value||"").toLowerCase();history.innerHTML=records().filter(r=>`${r.site} ${r.groupe} ${r.technicien}`.toLowerCase().includes(q)).map(r=>`<div class="listitem"><h3>${esc(r.groupe)} — ${esc(r.site)}</h3><p>${new Date(r.date).toLocaleString("fr-FR")} · ${esc(r.technicien)}</p><p>Pièces : ${(r.parts||[]).map(x=>esc(x.name)+" × "+x.qty).join(", ")||"Aucune"}</p></div>`).join("")||"<p>Aucun résultat.</p>"}
-function renderAdmin(){let a=records(), alerts=[];a.forEach(r=>(r.parts||[]).forEach(p=>{let old=a.find(q=>q!==r&&q.groupe===r.groupe&&q.parts?.some(x=>x.name===p.name)&&r.id-q.id<21*86400000);if(old)alerts.push({r,p,old})}));adminAlerts.innerHTML=alerts.map(x=>`<div class="alert"><b>🔔 Alerte remplacement récent</b><br>Groupe : ${esc(x.r.groupe)}<br>Pièce : ${esc(x.p.name)}<br>Ancien remplacement : ${Math.round((x.r.id-x.old.id)/86400000)} jour(s) auparavant<br>Technicien : ${esc(x.r.technicien)}</div>`).join("")||"<span class='badge ok'>Aucune notification.</span>"}
-function show(id,btn){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");renderAll()}
-function newForm(){document.getElementById("form").reset();parts=[];renderParts();updateSites()}
-function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-const canvas=document.getElementById("sig"),ctx=canvas.getContext("2d");function resize(){let r=canvas.getBoundingClientRect(),d=devicePixelRatio||1;canvas.width=r.width*d;canvas.height=150*d;ctx.scale(d,d);ctx.lineWidth=2;ctx.lineCap="round"}resize();window.addEventListener("resize",resize);let draw=false;function pos(e){let r=canvas.getBoundingClientRect(),p=e.touches?e.touches[0]:e;return{x:p.clientX-r.left,y:p.clientY-r.top}}function st(e){draw=true;let p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);e.preventDefault()}function mv(e){if(!draw)return;let p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();e.preventDefault()}canvas.addEventListener("mousedown",st);canvas.addEventListener("mousemove",mv);window.addEventListener("mouseup",()=>draw=false);canvas.addEventListener("touchstart",st,{passive:false});canvas.addEventListener("touchmove",mv,{passive:false});canvas.addEventListener("touchend",()=>draw=false);function clearSig(){ctx.clearRect(0,0,canvas.width,canvas.height)}
-renderAll();checkAuto();
+const SUPABASE_URL="https://ecxtvzpzbtddrjysfgfs.supabase.co";
+const SUPABASE_KEY="sb_publishable_ynlEBWgJwWJ6T402PUDDEQ_s4ZUkb5J";
+let token=localStorage.getItem("ge_token"), sites=[], groups=[], runs=[], parts=[];
+
+async function api(path,opt={}) {
+  opt.headers=Object.assign({"apikey":SUPABASE_KEY,"Content-Type":"application/json"},opt.headers||{});
+  if(token) opt.headers.Authorization="Bearer "+token;
+  const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,opt);
+  const text=await r.text(); let data;
+  try{data=text?JSON.parse(text):null}catch{data=text}
+  if(!r.ok) throw new Error(typeof data==="string"?data:(data?.message||data?.hint||JSON.stringify(data)));
+  return data;
+}
+function showMsg(x){document.getElementById("msg").innerHTML='<div class="error">'+x+'</div>'}
+async function login(){
+ try{let e=email.value,p=password.value;
+ const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:e,password:p})});
+ const d=await r.json(); if(!r.ok) throw Error(d.msg||d.error_description||"Connexion impossible");
+ token=d.access_token;localStorage.setItem("ge_token",token); start();
+ }catch(e){showMsg(e.message)}
+}
+async function signup(){
+ try{let e=email.value,p=password.value;if(!e||!p)throw Error("Renseigne email et mot de passe.");
+ const r=await fetch(SUPABASE_URL+"/auth/v1/signup",{method:"POST",headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:e,password:p})});
+ const d=await r.json();if(!r.ok)throw Error(d.msg||d.error_description||"Création impossible");
+ showMsg("Compte créé. Si la confirmation email est activée, confirme ton email puis connecte-toi.");
+ }catch(e){showMsg(e.message)}
+}
+function logout(){localStorage.removeItem("ge_token");location.reload()}
+async function start(){
+ login.style.display="none";app.style.display="block";
+ try{sites=await api("ge_sites?select=id,name&order=name");site.innerHTML=sites.map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
+ await loadGroups(); parts=await api("ge_parts?select=id,name&order=name");part.innerHTML=parts.map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
+ }catch(e){document.body.insertAdjacentHTML("afterbegin",`<div class="error">${e.message}</div>`)}
+}
+async function loadGroups(){
+ groups=await api("ge_generators?select=id,site_id,name,power_kw&site_id=eq."+site.value+"&order=name");
+ group.innerHTML=groups.map(x=>`<option value="${x.id}">${x.name}</option>`).join("");
+ await render();
+}
+async function render(){
+ const gid=group.value;if(!gid)return;
+ runs=await api("ge_runs?select=*&generator_id=eq."+gid+"&order=started_at.desc&limit=50");
+ const active=runs.find(x=>!x.stopped_at);
+ if(active){
+   const sec=(Date.now()-new Date(active.started_at))/1000, kwh=sec/3600*Number(active.power_kw);
+   state.innerHTML=`<div class="metric"><b>🟢 EN MARCHE</b><span>${(sec/3600).toFixed(2)} h</span></div><button class="stop" onclick="stop()">⏹️ ARRÊTER</button>`;
+   energy.innerHTML=`<div class="metric"><span>Puissance</span><b>${active.power_kw} kW</b></div><div class="metric"><span>Énergie estimée</span><b>${kwh.toFixed(1)} kWh</b></div>`;
+ }else{
+   state.innerHTML=`<div class="metric"><b>⚪ ARRÊTÉ</b></div><button onclick="startRun()">▶️ DÉMARRER</button>`;
+   const total=runs.reduce((s,x)=>s+Number(x.energy_kwh||0),0);
+   energy.innerHTML=`<div class="metric"><span>Énergie historique</span><b>${total.toFixed(1)} kWh</b></div>`;
+ }
+}
+async function startRun(){
+ const g=groups.find(x=>x.id===group.value);
+ await api("ge_runs",{method:"POST",body:JSON.stringify({generator_id:g.id,technician_id:null,power_kw:g.power_kw})});
+ await render();
+}
+async function stop(){
+ const r=runs.find(x=>!x.stopped_at);if(!r)return;
+ const stopped=new Date(),dur=(stopped-new Date(r.started_at))/1000,kwh=dur/3600*Number(r.power_kw);
+ await api("ge_runs?id=eq."+r.id,{method:"PATCH",body:JSON.stringify({stopped_at:stopped.toISOString(),duration_seconds:Math.round(dur),energy_kwh:kwh})});
+ await render();
+}
+async function saveReading(){
+ try{
+ const row={generator_id:group.value,technician_id:null,engine_hours:hours.value||null,rpm:rpm.value||null,voltage:voltage.value||null,frequency:freq.value||null,oil_pressure:oil.value||null,temperature:temp.value||null,criticality:critical.value,anomaly:anomaly.value||null};
+ await api("ge_readings",{method:"POST",body:JSON.stringify(row)});
+ alert("Relevé enregistré.");
+ }catch(e){alert(e.message)}
+}
+async function savePart(){
+ try{
+ const reading=await api("ge_readings?generator_id=eq."+group.value+"&order=created_at.desc&limit=1");
+ if(!reading.length){alert("Enregistre d'abord un relevé.");return}
+ await api("ge_used_parts",{method:"POST",body:JSON.stringify({reading_id:reading[0].id,part_id:part.value,quantity:Number(qty.value)||1})});
+ partMsg.textContent="Pièce enregistrée.";
+ }catch(e){partMsg.textContent=e.message}
+}
+if(token)start();
 </script>
 </body></html>
