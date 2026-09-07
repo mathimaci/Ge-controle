@@ -31,7 +31,13 @@ button.secondary{background:#475467}button.green{background:var(--green)}button.
 #login{max-width:430px;margin:35px auto;padding:14px}.hidden{display:none!important}
 @media(max-width:650px){.grid{grid-template-columns:1fr}}
 @media print{header,.bottomnav,.no-print{display:none!important}.screen{display:block!important}body{padding:0;background:#fff}.card{box-shadow:none}}
-</style>
+<style>
+.history-row{display:grid;grid-template-columns:100px 90px 80px 95px 1fr 60px 100px;gap:6px;padding:8px;border-left:6px solid #64748b;border-bottom:1px solid #ddd;font-size:12px}
+.history-row.start{border-left-color:#16a34a;background:#f0fdf4}.history-row.stop{border-left-color:#2563eb;background:#eff6ff}.history-row.anomaly{border-left-color:#dc2626;background:#fef2f2}.history-row.part{border-left-color:#ea580c;background:#fff7ed}
+.history-head{font-weight:bold;background:#f8fafc}
+.exportbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:700px){.history-row{grid-template-columns:75px 70px 60px 70px 1fr 40px 75px;font-size:10px}}
+</style></style>
 </head>
 <body>
 <header><h1>⚙️ GE Control</h1><small>V3.5 — version de test</small></header>
@@ -100,6 +106,14 @@ button.secondary{background:#475467}button.green{background:var(--green)}button.
 <section id="historique" class="screen">
 <div class="card"><h2>📊 Historique machine</h2>
 <label>Territoire</label><select id="hSite"></select><label>Groupe</label><select id="hGen"></select>
+<div class="grid">
+<div><label>Date début</label><input id="hStart" type="date"></div>
+<div><label>Date fin</label><input id="hEnd" type="date"></div>
+</div>
+<div class="exportbar">
+<button type="button" id="exportExcel">📊 Excel</button>
+<button type="button" id="exportPdf" class="secondary">📄 PDF</button>
+</div>
 <div id="historyContent"></div>
 </div></section>
 
@@ -241,7 +255,44 @@ $("saveReading").onclick=async()=>{try{await api("ge_readings",{method:"POST",bo
 $("saveChecks").onclick=async()=>{try{let o={};checks.forEach((c,i)=>o[c]=$( "ck"+i).value);await api("ge_readings",{method:"POST",body:JSON.stringify({generator_id:$("cGen").value,criticality:Object.values(o).includes("NOK")?"Majeure":"Aucune",anomaly:$("checkComment").value||null,checklist:o})});showMsg("checkMsg","Contrôles enregistrés.","success")}catch(e){showMsg("checkMsg",e.message,"error")}};
 async function checkPart(){try{const rows=await api("ge_used_parts?select=created_at,part_id,ge_readings!inner(generator_id)&part_id=eq."+encodeURIComponent($("part").value)+"&ge_readings.generator_id=eq."+encodeURIComponent($("pGen").value)+"&order=created_at.desc&limit=1"),recent=rows[0]&&Date.now()-new Date(rows[0].created_at)<21*86400000;$("partAlert").innerHTML=recent?"<div class='alert'>⚠️ Cette pièce a déjà été utilisée sur cette machine il y a moins de 3 semaines.</div>":""}catch{$("partAlert").innerHTML=""}}
 $("savePart").onclick=async()=>{try{const r=await api("ge_readings?select=id&generator_id=eq."+encodeURIComponent($("pGen").value)+"&order=created_at.desc&limit=1");if(!r.length){showMsg("partMsg","Enregistre d'abord un relevé.","error");return}await api("ge_used_parts",{method:"POST",body:JSON.stringify({reading_id:r[0].id,part_id:$("part").value,quantity:+$("qty").value||1})});showMsg("partMsg","Pièce enregistrée.","success");checkPart()}catch(e){showMsg("partMsg",e.message,"error")}};
-async function loadHistory(){try{const id=$("hGen").value;if(!id)return;const [r,rs]=await Promise.all([api("ge_readings?select=*&generator_id=eq."+id+"&order=created_at.desc&limit=100"),api("ge_runs?select=*&generator_id=eq."+id+"&order=started_at.desc&limit=100")]);const h=rs.reduce((a,x)=>a+Number(x.duration_seconds||0)/3600,0),k=rs.reduce((a,x)=>a+Number(x.energy_kwh||0),0);$("historyContent").innerHTML=`<div class='metric'><span>Relevés</span><b>${r.length}</b></div><div class='metric'><span>Heures marche</span><b>${h.toFixed(2)} h</b></div><div class='metric'><span>Énergie historique</span><b>${k.toFixed(1)} kWh</b></div><h3>Derniers relevés</h3>`+r.slice(0,20).map(x=>`<div class='listitem'>${new Date(x.created_at).toLocaleString("fr-FR")} · ${esc(x.criticality||"Aucune")}<br>Temp. ${esc(x.temperature??"-")} °C · Huile ${esc(x.oil_pressure??"-")} bar · ${esc(x.voltage??"-")} V · ${esc(x.frequency??"-")} Hz<br>${esc(x.anomaly||"Aucune anomalie")}</div>`).join("")}catch(e){$("historyContent").innerHTML=`<div class='alert'>${esc(e.message)}</div>`}}
+async function loadHistory(){
+ try{
+  const id=$("hGen").value;if(!id)return;
+  if(!$("hStart").value)$("hStart").value="2026-01-01";
+  if(!$("hEnd").value)$("hEnd").value=new Date().toISOString().slice(0,10);
+  const [rs,runs]=await Promise.all([
+   api("ge_readings?select=*&generator_id=eq."+id+"&order=created_at.desc&limit=500"),
+   api("ge_runs?select=*&generator_id=eq."+id+"&order=started_at.desc&limit=500")
+  ]);
+  const events=[];
+  runs.forEach(r=>{
+   events.push({date:new Date(r.started_at),event:"DÉMARRAGE",type:"start",duration:r.duration_seconds?(Number(r.duration_seconds)/3600).toFixed(2)+" h":"—",kwh:r.energy_kwh?Number(r.energy_kwh).toFixed(1):"—",anomaly:"",part:"",qty:"",tech:r.technician||""});
+   if(r.stopped_at)events.push({date:new Date(r.stopped_at),event:"ARRÊT",type:"stop",duration:r.duration_seconds?(Number(r.duration_seconds)/3600).toFixed(2)+" h":"—",kwh:r.energy_kwh?Number(r.energy_kwh).toFixed(1):"—",anomaly:"",part:"",qty:"",tech:r.technician||""});
+  });
+  rs.forEach(r=>{if(r.anomaly)events.push({date:new Date(r.created_at),event:"ANOMALIE",type:"anomaly",duration:"—",kwh:"—",anomaly:r.anomaly,part:"",qty:"",tech:r.technician||""})});
+  const from=new Date($("hStart").value+"T00:00:00"),to=new Date($("hEnd").value+"T23:59:59");
+  window.historyExportData=events.filter(x=>x.date>=from&&x.date<=to).sort((a,b)=>b.date-a.date);
+  const rows=window.historyExportData;
+  $("historyContent").innerHTML='<div class="history-row history-head"><div>Date</div><div>Événement</div><div>Durée</div><div>kWh</div><div>Anomalie / Pièce</div><div>Qté</div><div>Technicien</div></div>'+
+   (rows.map(x=>`<div class="history-row ${x.type}"><div>${x.date.toLocaleString("fr-FR")}</div><div><b>${x.event}</b></div><div>${x.duration}</div><div>${x.kwh}</div><div>${esc(x.anomaly||x.part||"")}</div><div>${esc(x.qty||"")}</div><div>${esc(x.tech||"")}</div></div>`).join("")||"<div class='notice'>Aucun événement sur cette période.</div>");
+ }catch(e){$("historyContent").innerHTML="<div class='alert'>"+esc(e.message)+"</div>"}
+}
+function exportExcel(){
+ const rows=window.historyExportData||[];if(!rows.length){alert("Aucune donnée.");return}
+ const head=["Date","Événement","Durée","Estimation kWh","Anomalie","Pièce","Quantité","Technicien"];
+ const cell=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+ const csv="\uFEFF"+[head,...rows.map(x=>[x.date.toLocaleString("fr-FR"),x.event,x.duration,x.kwh,x.anomaly,x.part,x.qty,x.tech])].map(r=>r.map(cell).join(";")).join("\n");
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="historique_GE.csv";a.click();
+}
+function exportPdf(){
+ const rows=window.historyExportData||[];if(!rows.length){alert("Aucune donnée.");return}
+ const w=window.open("","_blank");w.document.write("<html><head><title>Historique GE</title><style>body{font:10px Arial}.r{display:grid;grid-template-columns:90px 75px 60px 60px 1fr 40px 80px;padding:5px;border-bottom:1px solid #ddd;border-left:5px solid}.start{border-left-color:#16a34a;background:#f0fdf4}.stop{border-left-color:#2563eb;background:#eff6ff}.anomaly{border-left-color:#dc2626;background:#fef2f2}.head{font-weight:bold;background:#eee}</style></head><body><h2>Historique groupe électrogène</h2>");
+ w.document.write('<div class="r head"><span>Date</span><span>Événement</span><span>Durée</span><span>kWh</span><span>Anomalie / Pièce</span><span>Qté</span><span>Technicien</span></div>');
+ rows.forEach(x=>w.document.write(`<div class="r ${x.type}"><span>${x.date.toLocaleString("fr-FR")}</span><span>${esc(x.event)}</span><span>${esc(x.duration)}</span><span>${esc(x.kwh)}</span><span>${esc(x.anomaly||x.part||"")}</span><span>${esc(x.qty||"")}</span><span>${esc(x.tech||"")}</span></div>`));
+ w.document.write("<script>window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>");w.document.close();
+}
+$("exportExcel").onclick=exportExcel;$("exportPdf").onclick=exportPdf;
+$("hStart").onchange=loadHistory;$("hEnd").onchange=loadHistory;
 async function loadEnergy(){try{const id=$("eGen").value;if(!id)return;const rs=await api("ge_runs?select=*&generator_id=eq."+id+"&order=started_at.desc&limit=500");const weeks={};rs.forEach(r=>{if(r.energy_kwh){const w=startWeek(r.started_at).toISOString().slice(0,10);weeks[w]=(weeks[w]||0)+Number(r.energy_kwh)}});const cur=startWeek(new Date()).toISOString().slice(0,10);$("energyHistory").innerHTML=`<div class='metric'><span>Semaine en cours</span><b>${(weeks[cur]||0).toFixed(1)} kWh</b></div>`+Object.entries(weeks).sort((a,b)=>b[0].localeCompare(a[0])).map(([w,k])=>`<div class='listitem'><b>Semaine du ${new Date(w+"T00:00:00").toLocaleDateString("fr-FR")}</b><br>${k.toFixed(1)} kWh</div>`).join("")}catch(e){$("energyHistory").innerHTML=`<div class='alert'>${esc(e.message)}</div>`}}
 $("makeReport").onclick=async()=>{try{const gid=$("reportGen").value||$("hGen").value;if(!gid){$("report").innerHTML="<div class='notice'>Sélectionne un groupe.</div>";return}const start=startWeek($("reportDate").value),end=new Date(start);end.setDate(end.getDate()+7);const g=groups.find(x=>x.id===gid),[rs,read]=await Promise.all([api(`ge_runs?select=*&generator_id=eq.${gid}&started_at=gte.${start.toISOString()}&started_at=lt.${end.toISOString()}`),api(`ge_readings?select=*&generator_id=eq.${gid}&created_at=gte.${start.toISOString()}&created_at=lt.${end.toISOString()}`)]),h=rs.reduce((a,x)=>a+Number(x.duration_seconds||0)/3600,0),k=rs.reduce((a,x)=>a+Number(x.energy_kwh||0),0);$("report").innerHTML=`<div class='card'><h3>Rapport — ${esc(g.name)}</h3><p>Semaine du ${start.toLocaleDateString("fr-FR")}</p><div class='metric'><span>Heures</span><b>${h.toFixed(2)} h</b></div><div class='metric'><span>Énergie</span><b>${k.toFixed(1)} kWh</b></div><div class='metric'><span>Démarrages</span><b>${rs.length}</b></div><div class='metric'><span>Relevés</span><b>${read.length}</b></div><h3>Anomalies</h3>${read.map(r=>`<div class='listitem'>${new Date(r.created_at).toLocaleString("fr-FR")} · ${esc(r.criticality)}<br>${esc(r.anomaly||"Aucune")}</div>`).join("")||"Aucune"}</div>`}catch(e){$("report").innerHTML=`<div class='alert'>${esc(e.message)}</div>`}};
 $("reportGen").innerHTML="";
